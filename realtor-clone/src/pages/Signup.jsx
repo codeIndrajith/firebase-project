@@ -2,6 +2,11 @@ import React, { useState } from 'react'
 import {AiFillEyeInvisible , AiFillEye} from 'react-icons/ai'
 import {Link} from 'react-router-dom'
 import OAuth from '../components/OAuth';
+import {createUserWithEmailAndPassword, getAuth , updateProfile} from 'firebase/auth';
+import {db} from '../firebase'
+import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
+import {toast} from 'react-toastify'
 
 function Signup() {
   const [showPassword , setShowPassword] = useState(false);
@@ -11,6 +16,7 @@ function Signup() {
     password : ""
   });
   const {name , email , password} = formData;
+  const navigate = useNavigate();
   const getValue = (event) => {
     setFormData((previousValue) => ({
       ...previousValue,
@@ -18,6 +24,28 @@ function Signup() {
     }))
   }
 
+  const onSubmitMethod = async (event) => {
+    event.preventDefault();
+
+    try {
+      const auth = getAuth();
+      const userCredential = await createUserWithEmailAndPassword(auth , email , password);
+      updateProfile(auth.currentUser , {
+        displayName : name
+      });
+      const user = userCredential.user;
+      const formDataCopy = {...formData , }
+      delete formDataCopy.password
+      formDataCopy.timestamp = serverTimestamp()
+
+      await setDoc(doc(db , "users" , user.uid) , formDataCopy);
+      toast.success("Registration complete");
+      navigate("/");
+      
+    } catch (error) {
+      toast.error("Something went wrong");
+    }
+  }
  
   return (
     <section>
@@ -28,9 +56,9 @@ function Signup() {
           className='w-full rounded-2xl'/>
         </div>
         <div className='w-full md:w-[67%] lg:w-[40%] lg:ml-20'>
-          <form action="">
+          <form onSubmit={onSubmitMethod}>
           <label className='text-xl font-bold'> Name </label> <br />
-           <input type="email" id = "email" value={email} onChange={getValue} placeholder='Enter Email' className='w-full text-xl rounded text-gray-700 border-gray-300 px-4 py-2 transition ease-in-out'/>
+           <input type="text" id = "name" value={name} onChange={getValue} placeholder='Enter Email' className='w-full text-xl rounded text-gray-700 border-gray-300 px-4 py-2 transition ease-in-out'/>
             <label className='text-xl font-bold'> Email </label> <br />
            <input type="email" id = "email" value={email} onChange={getValue} placeholder='Enter Email' className='w-full text-xl rounded text-gray-700 border-gray-300 px-4 py-2 transition ease-in-out'/>
            <label className='text-xl font-bold'> Password </label> <br />
