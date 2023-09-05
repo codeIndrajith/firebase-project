@@ -34,7 +34,7 @@ function Signup() {
         displayName : name
       });
       const user = userCredential.user;
-      const formDataCopy = {...formData , }
+      const formDataCopy = {...formData }
       delete formDataCopy.password
       formDataCopy.timestamp = serverTimestamp()
 
