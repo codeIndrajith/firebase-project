@@ -1,11 +1,25 @@
 import React, { useState } from 'react'
 import {Link} from 'react-router-dom'
 import OAuth from '../components/OAuth';
+import {toast} from 'react-toastify'
+import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
 
 function ForgotPassword() {
   const [email , setEmail] = useState("");
   const getValue = (event) => {
     setEmail(event.target.value);
+  }
+
+  const onSubmitFunction = async (event) => {
+    event.preventDefault();
+
+    try {
+      const auth = getAuth();
+      await sendPasswordResetEmail(auth , email);
+      toast.success("Email was sent")
+    } catch (error) {
+      toast.error("Couldn't send Reset Password")
+    }
   }
 
  
@@ -18,7 +32,7 @@ function ForgotPassword() {
           className='w-full rounded-2xl'/>
         </div>
         <div className='w-full md:w-[67%] lg:w-[40%] lg:ml-20'>
-          <form action="">
+          <form onSubmit={onSubmitFunction}>
           <label className='text-xl font-bold'> Email </label> <br />
            <input type="email" id = "email" value={email} onChange={getValue} placeholder='Enter Email' className='w-full text-xl rounded text-gray-700 border-gray-300 px-4 py-2 transition ease-in-out'/>
           
