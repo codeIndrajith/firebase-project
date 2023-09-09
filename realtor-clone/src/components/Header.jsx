@@ -30,9 +30,9 @@ function Header() {
             </div>
             <div>
                 <ul className='cursor-pointer flex justify-between space-x-9'>
-                    <li className={`py-3 text-sm font-semibold text-gray-400 border-b-[3px] border-b-transparent ${pathMatchRoute('/') && "text-blue-900 border-b-red-800"}`} onClick={() => navigate("/")}>Home</li>
-                    <li className={`py-3 text-sm font-semibold text-gray-400 border-b-[3px] border-b-transparent ${pathMatchRoute('/offers') && "text-blue-900 border-b-red-800"}`} onClick={() => navigate("/offers")}>Offers</li>
-                    <li className={`py-3 text-sm font-semibold text-gray-400 border-b-[3px] border-b-transparent ${(pathMatchRoute('/sign-in') || pathMatchRoute('/profile')) && "text-blue-900 border-b-red-800"}`} onClick={() => navigate("/profile")}>{pageName}</li>
+                    <li className={`py-3 text-sm font-semibold text-gray-400 border-b-[3px] border-b-transparent ${pathMatchRoute('/') && "text-black border-b-blue-800"}`} onClick={() => navigate("/")}>Home</li>
+                    <li className={`py-3 text-sm font-semibold text-gray-400 border-b-[3px] border-b-transparent ${pathMatchRoute('/offers') && "text-black border-b-blue-800"}`} onClick={() => navigate("/offers")}>Offers</li>
+                    <li className={`py-3 text-sm font-semibold text-gray-400 border-b-[3px] border-b-transparent ${(pathMatchRoute('/sign-in') || pathMatchRoute('/profile')) && "text-black border-b-blue-800"}`} onClick={() => navigate("/profile")}>{pageName}</li>
                 </ul>
             </div>
         </header>
