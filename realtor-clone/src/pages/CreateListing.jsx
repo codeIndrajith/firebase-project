@@ -1,10 +1,17 @@
 import React, { useState } from 'react'
 import Spinner from '../components/Spinner'
 import { toast } from 'react-toastify';
-
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import {getAuth} from 'firebase/auth';
+import {v4 as uuidv4} from 'uuid';
+import {addDoc, collection, serverTimestamp} from 'firebase/firestore';
+import {db} from '../firebase.js'
+import { useNavigate } from 'react-router-dom';
 
 function CreateListing() {
 
+    const navigate = useNavigate();
+    const auth = getAuth();
     const [geoLocationEnabled , setGeoLocationEnabled] = useState(true)
     const [loading , setLoading] = useState(false);
     const [formData , setFormData] = useState({
@@ -54,7 +61,7 @@ function CreateListing() {
     const onSubmitHandler = async (event) => {
         event.preventDefault();
        setLoading(true);
-       if(discountedPrice >= regularPrice) {
+       if(+discountedPrice >= +regularPrice) {
         setLoading(false);
         toast.error("Discounted price need to be less than to Regular Price")
         return;
@@ -67,16 +74,113 @@ function CreateListing() {
 
         let geolocation = {};
         let location
-        if(geoLocationEnabled) {           
-                const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${import.meta.env.VITE_REACT_APP_GEOCODE_API_KEY}`);
-                const data = await res.json();            
-                console.log(data);           
-        }
+        if (geoLocationEnabled) {
+            try {
+            //   const apiKey = import.meta.env.VITE_REACT_APP_GEOCODE_API_KEY;
+              const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${import.meta.env.VITE_REACT_APP_GEOCODE_API_KEY}`);
+              const data = await res.json();
+              
+           
+                // Process the geocoding results
+                console.log(data);
+                geolocation.lat = data.results[0]?.geometry.location.lat ?? 0;
+                geolocation.lng = data.results[0]?.geometry.location.lng ?? 0;
 
+                location = data.status === "ZERO_RESULTS" && undefined;
+
+                if (location === undefined) {
+                    setLoading(false);
+                    toast.error('Enter a valid address');
+                    return;
+                  }
+                  
+              
+            } catch (error) {
+              console.log(error);
+            }
+          }
+          else {
+            geolocation.lat = latitude;
+            geolocation.lng = longitude;
+          }
+
+          const storeImage = async (image) => {
+            return new Promise((resolve , reject) => {
+                const storage = getStorage()
+                const fileName = `${auth.currentUser.uid}-${image.name}-${uuidv4()}`
+                const storageRef = ref(storage, fileName);
+                const uploadTask = uploadBytesResumable(storageRef, image);
+
+                uploadTask.on('state_changed', 
+                (snapshot) => {
+                    // Observe state change events such as progress, pause, and resume
+                    // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    console.log('Upload is ' + progress + '% done');
+                    switch (snapshot.state) {
+                    case 'paused':
+                        console.log('Upload is paused');
+                        break;
+                    case 'running':
+                        console.log('Upload is running');
+                        break;
+                    }
+                }, 
+                (error) => {
+                    reject(error)
+                }, 
+                () => {
+                    // Handle successful uploads on complete
+                    // For instance, get the download URL: https://firebasestorage.googleapis.com/...
+                    getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                    resolve(downloadURL);
+                    });
+                }
+                );
+
+                            })
+}
+          
+          const imgUrls = await Promise.all(
+            [...images].map((image) => storeImage(image))
+            ).catch((error) => {
+                setLoading(false)
+                toast.error("Image not uploaded")
+                return;
+            }
+        ) 
+           const formDataCopy = {
+            ...formData,
+            imgUrls,
+            geolocation,
+            timestamp : serverTimestamp()
+           };
+           delete formDataCopy.images;
+
+           if(!formDataCopy.offer) {
+            delete formDataCopy.discountedPrice;
+           }   
+           delete formDataCopy.latitude;
+           delete formDataCopy.longitude;       
+           
+           try {
+            const docRef = await addDoc(collection(db , "listings"), formDataCopy);
+            setLoading(false);
+            toast.success("Listings created");
+            navigate(`/category/${formDataCopy.type}/${docRef.id}`)
+          } catch (error) {
+            console.error("Firestore Error:", error);
+            setLoading(false);
+            toast.error("Failed to create listing");
+          }
+         
+           
     }
 
+    
+
     if(loading) {
-        return <Spinner />
+        return <Spinner />;
     }
   return (
     <main className='max-w-md px-2 mx-auto'>
