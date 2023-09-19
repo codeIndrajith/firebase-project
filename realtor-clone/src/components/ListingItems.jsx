@@ -1,8 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { MdLocationPin } from 'react-icons/md';
+import {FaTrash} from 'react-icons/fa'
+import {MdModeEditOutline} from 'react-icons/md'
 
-function ListingItems({ listing, id }) {
+function ListingItems({ listing, id , onDelete , onUpdate}) {
   return (
     <li className='bg-white flex flex-col justify-between items-center shadow-md hover:shadow-xl rounded-md overflow-hidden transition-shadow duration-150 m-[10px]'>
       <Link className='contents' to={`/category/${listing.type}/${id}`}>
@@ -27,8 +29,15 @@ function ListingItems({ listing, id }) {
             </div>
           </div>
         </div>
-
       </Link>
+      <div className="relative bottom-6 left-[100px] flex space-x-2">
+      {onDelete && (
+        <FaTrash className='cursor-pointer text-red-500' onClick={() => onDelete(listing.id)}/>
+      )}
+      {onUpdate && (
+        <MdModeEditOutline className='cursor-pointer text-black' onClick={() => onUpdate(listing.id)}/>
+      )}
+      </div>
     </li>
   );
 }
