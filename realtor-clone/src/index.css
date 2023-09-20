@@ -5,3 +5,9 @@
 body {
     background-color: rgb(240, 250, 244);
 }
+
+.swiper-button-next:after,
+.swiper-button-prev:after {
+    color: #a8dadc;
+}
+
