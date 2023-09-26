@@ -11,3 +11,11 @@ body {
     color: #a8dadc;
 }
 
+html::-webkit-scrollbar {
+    display: none;
+}
+
+html{
+    scrollbar-width: none;
+}
+
