@@ -153,7 +153,7 @@ function Home() {
         {saleListings && saleListings.length > 0 && (
           <div className="mt-2 mb-6">
             <h2 className="px-2 text-2xl font-semibold mt-6">Places for sale</h2>
-            <Link to="/category/sale">
+            <Link to="/category/sell">
               <p className="px-2 text-sm font-semibold text-blue-500">
                 Show more places for sale
               </p>
